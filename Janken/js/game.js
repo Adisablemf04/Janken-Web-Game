@@ -3,20 +3,19 @@ import OutsideScene from "./scenes/outsidescene.js";
 import CourtyardScene from "./scenes/yardscene.js";
 import RoomScene from "./scenes/roomscene.js";
 import BattleScene from "./scenes/battlescene.js";
+import Level3Scene from "./scenes/level3scene.js";
+import Level4Scene from "./scenes/level4scene.js";
 
 import { getCurrentUser } from "./accountStorage.js";
 
-// Get the currently logged-in player
 const currentUser = getCurrentUser();
 
 if (!currentUser) {
 
-    // Guests must log in before playing
     window.location.replace("login.html");
 
 } else {
 
-    // Phaser game configuration
     const config = {
 
         type: Phaser.AUTO,
@@ -35,21 +34,22 @@ if (!currentUser) {
 
         physics: {
             default: "arcade",
+
             arcade: {
                 gravity: { x: 0, y: 0 },
                 debug: false
             }
         },
 
-        // Register all game scenes
         scene: [
             OutsideScene,
             CourtyardScene,
             RoomScene,
-            BattleScene
+            BattleScene,
+            Level3Scene,
+            Level4Scene
         ]
     };
 
-    // Start GANKEN
     new Phaser.Game(config);
 }

@@ -1,16 +1,10 @@
-
-import { decideRPS } from "../rules/rpsrules.js";
-
 import {
-    getGameData,
-    startOrResumeMatch,
-    saveRound,
-    payRetry,
-    resetRun
+    getGameData, startOrResumeMatch, buyAbility,
+    playRPSRound, payRetry, resetRun
 } from "../gameStorage.js";
+import { ABILITIES } from "../rules/abilities.js";
 
 export default class BattleScene extends Phaser.Scene {
-
     constructor() {
         super("BattleScene");
     }
@@ -20,548 +14,271 @@ export default class BattleScene extends Phaser.Scene {
     }
 
     create() {
-
         this.phase = "choose";
-        this.playerScore = 0;
-        this.npcScore = 0;
 
-        // Darken the room during the battle
-        this.add.rectangle(
-            450, 300, 900, 600, 0x000000, 0.45
-        );
+        this.add.rectangle(450, 300, 900, 600, 0x000000, 0.45);
+        this.scoreText = this.add.text(450, 65, "PLAYER 0 - 0 DEALER", {
+            fontSize: "26px", color: "#ff7185"
+        }).setOrigin(0.5);
+        this.coinsText = this.add.text(775, 95, "COINS: 0", {
+            fontSize: "18px", color: "#ffd083"
+        }).setOrigin(0.5);
 
-        // Match scores
-        this.scoreText = this.add.text(
-            450, 65, "PLAYER 0 - 0 DEALER",
-            {
-                fontSize: "26px",
-                fontFamily: "Arial",
-                color: "#ff7185"
-            }
-        ).setOrigin(0.5);
+        // Dealer dialogue and round results
+        this.add.rectangle(450, 135, 430, 58, 0x190a10, 0.95)
+            .setStrokeStyle(2, 0xb83c51);
+        this.npcDialogue = this.add.text(450, 135, "Choose wisely...", {
+            fontSize: "18px", color: "#f5ede4",
+            align: "center", wordWrap: { width: 400 }
+        }).setOrigin(0.5);
 
-        // Coin balance
-        this.coinsText = this.add.text(
-            775, 95, "COINS: 0",
-            {
-                fontSize: "18px",
-                fontFamily: "Arial",
-                color: "#ffd083"
-            }
-        ).setOrigin(0.5);
+        this.add.rectangle(450, 335, 820, 150, 0x190a10, 0.92)
+            .setStrokeStyle(2, 0x782738);
+        this.resultText = this.add.text(450, 335, "Choose your sign.", {
+            fontSize: "21px", color: "#f5ede4",
+            align: "center", wordWrap: { width: 780 }
+        }).setOrigin(0.5);
 
-        // NPC dialogue box
-        const dialogueBox = this.add.rectangle(
-            450, 135, 430, 58, 0x190a10, 0.95
-        );
-
-        dialogueBox.setStrokeStyle(2, 0xb83c51);
-
-        // NPC dialogue above the dealer
-        this.npcDialogue = this.add.text(
-            450, 135, "Choose wisely...",
-            {
-                fontSize: "18px",
-                fontFamily: "Arial",
-                color: "#f5ede4",
-                align: "center",
-                wordWrap: { width: 400 }
-            }
-        ).setOrigin(0.5);
-
-        // Round result box
-        const resultBox = this.add.rectangle(
-            450, 355, 820, 125, 0x190a10, 0.92
-        );
-
-        resultBox.setStrokeStyle(2, 0x782738);
-
-        // Round result text
-        this.resultText = this.add.text(
-            450, 355, "Choose your sign.",
-            {
-                fontSize: "24px",
-                fontFamily: "Arial",
-                color: "#f5ede4",
-                align: "center",
-                wordWrap: { width: 780 }
-            }
-        ).setOrigin(0.5);
-
-        // Create RPS buttons
-        const choices = ["Rock", "Paper", "Scissors"];
-        const positions = [220, 450, 680];
-
-        this.choiceButtons = [];
-
-        choices.forEach((choice, index) => {
-
-            const button = this.add.text(
-                positions[index],
-                520,
-                choice.toUpperCase(),
-                {
-                    fontSize: "23px",
-                    fontFamily: "Arial",
-                    color: "#f5ede4",
-                    backgroundColor: "#642233",
-                    padding: {
-                        x: 24,
-                        y: 16
-                    }
-                }
-            ).setOrigin(0.5);
-
-            button.setInteractive({
-                useHandCursor: true
-            });
-
-            button.on("pointerdown", () => {
-                this.playRound(choice);
-            });
-
-            button.on("pointerover", () => {
-                button.setBackgroundColor("#92364a");
-            });
-
-            button.on("pointerout", () => {
-                button.setBackgroundColor("#642233");
-            });
-
-            this.choiceButtons.push(button);
+        // RPS choices
+        this.choiceButtons = ["Rock", "Paper", "Scissors"].map((sign, i) => {
+            const button = this.makeButton(220 + i * 230, 520, sign.toUpperCase(), 23);
+            button.on("pointerdown", () => this.playRound(sign));
+            return button;
         });
 
-        // Continue, retry or return button
-        this.continueButton = this.add.text(
-            450, 520, "NEXT ROUND",
-            {
-                fontSize: "23px",
-                fontFamily: "Arial",
-                color: "#f5ede4",
-                backgroundColor: "#642233",
-                padding: {
-                    x: 28,
-                    y: 16
-                }
-            }
-        ).setOrigin(0.5);
+        // Only Level 2 has ability buttons
+        this.abilityButtons = [];
+        if (this.level === 2) {
+            const options = [
+                { key: "shield", name: "SHIELD", x: 190 },
+                { key: "mind", name: "MIND TRICK", x: 450 },
+                { key: "strike", name: "STRIKE", x: 710 }
+            ];
+            this.abilityButtons = options.map(item => {
+                const button = this.makeButton(
+                    item.x, 450, item.name, 17, "#572030", { x: 15, y: 11 }
+                );
+                button.on("pointerdown", () => this.purchaseAbility(item.key));
+                return { ...item, button };
+            });
+        }
 
-        this.continueButton.setInteractive({
-            useHandCursor: true
-        });
-
+        this.continueButton = this.makeButton(450, 520, "NEXT ROUND", 23);
+        this.continueButton.on("pointerdown", () => this.handleContinue());
         this.continueButton.setVisible(false);
 
-        this.continueButton.on("pointerdown", () => {
-            this.handleContinue();
-        });
-
-        // Optional button to leave without paying
-        this.leaveButton = this.add.text(
-            450, 575, "LEAVE ROOM",
-            {
-                fontSize: "17px",
-                fontFamily: "Arial",
-                color: "#f5ede4",
-                backgroundColor: "#38232b",
-                padding: {
-                    x: 18,
-                    y: 10
-                }
-            }
-        ).setOrigin(0.5);
-
-        this.leaveButton.setInteractive({
-            useHandCursor: true
-        });
-
+        this.leaveButton = this.makeButton(
+            450, 575, "LEAVE ROOM", 17, "#38232b", { x: 18, y: 10 }
+        );
+        this.leaveButton.on("pointerdown", () => this.returnToRoom());
         this.leaveButton.setVisible(false);
 
-        this.leaveButton.on("pointerdown", () => {
-            this.returnToRoom();
-        });
-
-        // Load saved coins, scores and retry state
         this.setupBattle();
     }
 
-    setupBattle() {
-
-        const game = getGameData();
-
-        if (!game) {
-            this.showBlocked("No player is logged in.");
-            return;
-        }
-
-        this.updateCoins(game);
-
-        // Game Over takes priority
-        if (game.isGameOver) {
-            this.showGameOver();
-            return;
-        }
-
-        // A previous loss requires payment
-        if (game.pendingRetryLevels.includes(this.level)) {
-            this.showRetryOffer();
-            return;
-        }
-
-        try {
-
-            // Start or restore the saved match
-            const saved = startOrResumeMatch(this.level);
-
-            this.playerScore =
-                saved.activeMatch.playerScore;
-
-            this.npcScore =
-                saved.activeMatch.npcScore;
-
-            this.updateScore();
-
-            if (this.playerScore > 0 || this.npcScore > 0) {
-
-                this.resultText.setText(
-                    "Your previous match has been restored.\nChoose your next sign."
-                );
-            }
-
-        } catch (error) {
-
-            this.showBlocked(error.message);
-        }
+    // Create buttons in one place instead of repeating the styles.
+    makeButton(x, y, text, size, background = "#642233", padding = { x: 24, y: 16 }) {
+        const button = this.add.text(x, y, text, {
+            fontSize: `${size}px`, color: "#f5ede4", backgroundColor: background, padding
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        button.on("pointerover", () => button.setBackgroundColor("#92364a"));
+        button.on("pointerout", () => button.setBackgroundColor(background));
+        return button;
     }
 
-    updateScore() {
-
-        this.scoreText.setText(
-            `PLAYER ${this.playerScore} - ${this.npcScore} DEALER`
-        );
-    }
-
-    updateCoins(game) {
-
-        this.coinsText.setText(
-            `COINS: ${game.currentCoins}`
-        );
+    updateDisplay(player, dealer, game) {
+        this.scoreText.setText(`PLAYER ${player} - ${dealer} DEALER`);
+        this.coinsText.setText(`COINS: ${game.currentCoins}`);
     }
 
     showChoices(visible) {
-
-        this.choiceButtons.forEach(button => {
-            button.setVisible(visible);
-        });
+        this.choiceButtons.forEach(button => button.setVisible(visible));
     }
 
-    playRound(playerChoice) {
+    showAction(label, phase) {
+        this.phase = phase;
+        this.continueButton.setText(label).setVisible(true);
+        this.showChoices(false);
+        this.updateAbilityButtons(getGameData());
+    }
 
-        // Only one choice is allowed per round
-        if (this.phase !== "choose") {
-            return;
+    // Dim abilities that are already used or cannot be purchased.
+    updateAbilityButtons(game) {
+        if (this.level !== 2) return;
+        const match = game?.activeMatch;
+        const canChoose = this.phase === "choose" && match?.level === 2;
+
+        for (const { key, name, button } of this.abilityButtons) {
+            button.setVisible(Boolean(canChoose));
+            if (!canChoose) continue;
+
+            const state = match.playerAbilities;
+            const used = state[`${key}Used`];
+            const hasTarget = key !== "strike" || match.npcScore > 0;
+            const available = !used && hasTarget && game.currentCoins >= ABILITIES[key].cost;
+
+            let label = `${name} - ${ABILITIES[key].cost}C`;
+            if (used) {
+                label = key === "shield" && state.shieldArmed ? "SHIELD ARMED"
+                    : key === "mind" && state.mindPending ? "MIND READY"
+                    : `${name} USED`;
+            } else if (!hasTarget) {
+                label = "STRIKE: NO TARGET";
+            }
+            button.setText(label).setAlpha(available ? 1 : 0.45);
+            button.setBackgroundColor(available ? "#572030" : "#30252a");
         }
+    }
 
-        // NPC selects randomly
-        const choices = ["Rock", "Paper", "Scissors"];
-
-        const npcChoice =
-            Phaser.Utils.Array.GetRandom(choices);
-
-        // Calculate the RPS result
-        const result = decideRPS(
-            playerChoice,
-            npcChoice
-        );
-
-        let saved;
+    setupBattle() {
+        const game = getGameData();
+        if (!game) return this.showBlocked("Please log in first.");
+        this.coinsText.setText(`COINS: ${game.currentCoins}`);
+        if (game.isGameOver) return this.showGameOver();
+        if (game.pendingRetryLevels.includes(this.level)) return this.showRetryOffer();
 
         try {
-
-            // Save scores and coins in localStorage
-            saved = saveRound(this.level, result);
-
+            const saved = startOrResumeMatch(this.level);
+            const match = saved.activeMatch;
+            this.updateDisplay(match.playerScore, match.npcScore, saved);
+            this.updateAbilityButtons(saved);
+            if (match.playerScore || match.npcScore) {
+                this.resultText.setText("Saved match restored. Choose your next sign.");
+            }
         } catch (error) {
+            this.showBlocked(error.message);
+        }
+    }
 
+    purchaseAbility(key) {
+        if (this.level !== 2 || this.phase !== "choose") return;
+        try {
+            const { game, message } = buyAbility(this.level, key);
+            const match = game.activeMatch;
+            this.updateDisplay(match.playerScore, match.npcScore, game);
+            this.resultText.setText(message);
+            this.updateAbilityButtons(game);
+        } catch (error) {
+            this.resultText.setText(error.message);
+        }
+    }
+
+    playRound(sign) {
+        if (this.phase !== "choose") return;
+
+        let round;
+        try {
+            round = playRPSRound(this.level, sign);
+        } catch (error) {
             this.showBlocked(error.message);
             return;
         }
 
-        // Restore the latest scores from saved data
-        this.playerScore =
-            saved.roundScores.playerScore;
+        this.updateDisplay(round.playerScore, round.npcScore, round.game);
+        this.npcDialogue.setText(`I chose ${round.npcChoice}.`);
 
-        this.npcScore =
-            saved.roundScores.npcScore;
-
-        this.updateScore();
-        this.updateCoins(saved.game);
-
-        // Display what both participants selected
-        let roundMessage = "";
-        let npcMessage = "";
-
-        if (result === "player") {
-
-            roundMessage = "YOU WON THE ROUND! +1 COIN";
-
-            npcMessage =
-                `I chose ${npcChoice}... lucky guess.`;
+        const lines = [
+            `YOU: ${round.playerChoice.toUpperCase()} | DEALER: ${round.npcChoice.toUpperCase()}`
+        ];
+        if (round.npcAbility) lines.push(`DEALER USED ${ABILITIES[round.npcAbility].name}`);
+        if (round.playerMind !== null) {
+            lines.push(`YOUR MIND TRICK ${round.playerMind ? "WORKED" : "FAILED"}!`);
         }
-
-        else if (result === "npc") {
-
-            roundMessage = "THE DEALER WON THE ROUND!";
-
-            npcMessage =
-                `I chose ${npcChoice}. Your luck ends here.`;
+        if (round.npcMind !== null) {
+            lines.push(`DEALER'S MIND TRICK ${round.npcMind ? "WORKED" : "FAILED"}!`);
         }
+        if (round.blockedBy === "player") lines.push("YOUR SHIELD BLOCKED THE DEFEAT!");
+        else if (round.blockedBy === "npc") lines.push("DEALER'S SHIELD BLOCKED YOUR POINT!");
+        else if (round.pointAwarded === "player") lines.push("YOU WON THE ROUND! +1 COIN");
+        else if (round.pointAwarded === "npc") lines.push("THE DEALER WON THE ROUND!");
+        else lines.push("IT'S A TIE!");
 
-        else {
+        this.resultText.setText(lines.join("\n"));
 
-            roundMessage = "IT'S A TIE!";
-
-            npcMessage =
-                `I chose ${npcChoice}. Again.`;
-        }
-
-        this.npcDialogue.setText(npcMessage);
-
-        this.resultText.setText(
-            `YOU: ${playerChoice.toUpperCase()} | DEALER: ${npcChoice.toUpperCase()}\n${roundMessage}`
-        );
-
-        // Prevent further choices until next round
-        this.showChoices(false);
-
-        // Player completes the level
-        if (saved.matchOutcome === "player") {
-
-            this.phase = "finished";
-
-            this.npcDialogue.setText(
-                "Impossible... you defeated me."
-            );
-
+        if (round.matchOutcome === "player") {
             this.resultText.setText(
-                `LEVEL ${this.level} COMPLETED!\n+2 BONUS COINS!\nLEVEL ${this.level + 1} ${this.level < 4 ? "UNLOCKED!" : "FINISHED!"}`
+                `LEVEL ${this.level} COMPLETED!\n+2 BONUS COINS!\nLEVEL ${this.level + 1} UNLOCKED!`
             );
-
-            this.continueButton.setText(
-                "RETURN TO ROOM"
-            );
-        }
-
-        // NPC wins the match
-        else if (saved.matchOutcome === "npc") {
-
-            if (saved.game.isGameOver) {
-
-                this.showGameOver();
-                return;
-            }
-
-            this.phase = "retry";
-
-            this.npcDialogue.setText(
-                "Your defeat comes at a price."
-            );
-
-            this.resultText.setText(
-                "YOU LOST THE MATCH!\nPay 2 coins to retry this level."
-            );
-
-            this.continueButton.setText(
-                "RETRY - 2 COINS"
-            );
-
+            this.npcDialogue.setText("Impossible... you defeated me.");
+            this.showAction("RETURN TO ROOM", "finished");
+        } else if (round.matchOutcome === "npc") {
+            if (round.game.isGameOver) return this.showGameOver();
+            this.npcDialogue.setText("Your defeat comes at a price.");
+            this.resultText.setText("YOU LOST THE MATCH!\nPay 2 coins to retry.");
+            this.showAction("RETRY - 2 COINS", "retry");
             this.leaveButton.setVisible(true);
+        } else {
+            this.showAction("NEXT ROUND", "continue");
         }
-
-        // Neither player has reached 3 points
-        else {
-
-            this.phase = "continue";
-
-            this.continueButton.setText(
-                "NEXT ROUND"
-            );
-        }
-
-        this.continueButton.setVisible(true);
     }
 
     showRetryOffer() {
-
-        this.phase = "retry";
-
-        this.showChoices(false);
-
-        this.npcDialogue.setText(
-            "Another chance will cost you."
-        );
-
-        this.resultText.setText(
-            "YOU LOST THIS LEVEL.\nPay 2 coins to start another match."
-        );
-
-        this.continueButton.setText(
-            "RETRY - 2 COINS"
-        );
-
-        this.continueButton.setVisible(true);
+        this.npcDialogue.setText("Another chance will cost you.");
+        this.resultText.setText("YOU LOST THIS LEVEL.\nPay 2 coins to retry.");
+        this.showAction("RETRY - 2 COINS", "retry");
         this.leaveButton.setVisible(true);
     }
 
     showGameOver() {
-
-        this.phase = "gameover";
-
-        this.showChoices(false);
-
-        this.npcDialogue.setText(
-            "The gamble has ended."
-        );
-
-        this.resultText.setText(
-            "GAME OVER\nYou cannot afford the 2-coin retry.\nStart a new run to try again."
-        );
-
-        this.continueButton.setText(
-            "START NEW RUN"
-        );
-
-        this.continueButton.setVisible(true);
+        this.npcDialogue.setText("The gamble has ended.");
+        this.resultText.setText("GAME OVER\nYou cannot afford another retry.");
+        this.showAction("START NEW RUN", "gameover");
         this.leaveButton.setVisible(false);
     }
 
     showBlocked(message) {
-
-        this.phase = "blocked";
-
-        this.showChoices(false);
-
-        this.npcDialogue.setText(
-            "The dealer refuses your challenge."
-        );
-
+        this.npcDialogue.setText("The dealer refuses your challenge.");
         this.resultText.setText(message);
-
-        this.continueButton.setText(
-            "RETURN TO ROOM"
-        );
-
-        this.continueButton.setVisible(true);
+        this.showAction("RETURN TO ROOM", "blocked");
         this.leaveButton.setVisible(false);
     }
 
     handleContinue() {
-
         if (this.phase === "continue") {
             this.nextRound();
-        }
-
-        else if (this.phase === "finished") {
-            this.returnToRoom();
-        }
-
-        else if (this.phase === "retry") {
+        } else if (this.phase === "retry") {
             this.retryMatch();
-        }
-
-        else if (this.phase === "gameover") {
-            this.startNewRun();
-        }
-
-        else if (this.phase === "blocked") {
+        } else if (this.phase === "gameover") {
+            try {
+                resetRun();
+                this.scene.stop("RoomScene");
+                this.scene.start("OutsideScene");
+            } catch (error) {
+                this.showBlocked(error.message);
+            }
+        } else if (["finished", "blocked"].includes(this.phase)) {
             this.returnToRoom();
         }
     }
 
     nextRound() {
-
         this.phase = "choose";
-
-        this.npcDialogue.setText(
-            "What's your next move?"
-        );
-
-        this.resultText.setText(
-            "Choose your next sign."
-        );
-
+        this.npcDialogue.setText("What's your next move?");
+        this.resultText.setText("Choose your next sign.");
         this.showChoices(true);
-
         this.continueButton.setVisible(false);
+        this.updateAbilityButtons(getGameData());
     }
 
     retryMatch() {
-
         try {
-
-            // Payment and new match are saved together
             const game = payRetry(this.level);
-
-            this.playerScore = 0;
-            this.npcScore = 0;
-            this.phase = "choose";
-
-            this.updateScore();
-            this.updateCoins(game);
-
-            this.npcDialogue.setText(
-                "Let's see if your luck has changed."
-            );
-
-            this.resultText.setText(
-                "New match. Choose your sign."
-            );
-
-            this.showChoices(true);
-
-            this.continueButton.setVisible(false);
+            this.updateDisplay(0, 0, game);
+            this.nextRound();
+            this.npcDialogue.setText("Let's see if your luck has changed.");
+            this.resultText.setText("New match. Choose your sign.");
             this.leaveButton.setVisible(false);
-
         } catch (error) {
-
-            this.showBlocked(error.message);
-        }
-    }
-
-    startNewRun() {
-
-        try {
-
-            resetRun();
-
-            // Close the paused room
-            this.scene.stop("RoomScene");
-
-            // Restart from the outside environment
-            this.scene.start("OutsideScene");
-
-        } catch (error) {
-
             this.showBlocked(error.message);
         }
     }
 
     returnToRoom() {
-
         const room = this.scene.get("RoomScene");
-
         room.tableActivated = false;
-
-        room.dialogue.setText(
-            "Care for another gamble?"
-        );
-
-        room.prompt.setText(
-            "Approach the table | ESC to leave"
-        );
-
+        room.dialogue.setText("Care for another gamble?");
+        room.prompt.setText("Approach the table | ESC to leave");
         this.scene.resume("RoomScene");
-
         this.scene.stop();
     }
 }
