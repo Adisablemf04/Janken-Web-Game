@@ -1,78 +1,35 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GANKEN - Registration</title>
+    <title>GANKEN</title>
     <link rel="stylesheet" href="css/account.css">
     <script type="module" src="js/accountForms.js"></script>
 </head>
-
 <body>
     <main class="account_page">
-
         <section class="account_box">
-
-            <a href="navigation.html" class="back_link">
-                ← BACK
-            </a>
-
+            <a href="navigation.html" class="back_link">BACK</a>
             <h1>GANKEN</h1>
             <h2>REGISTER</h2>
-
-            <p>Create your account before entering the arena.</p>
-
-            <form id="register_form" novalidate>
-
+            <p>Create your account, before entering DEVIL DEN.</p>
+            <form id="register_form" novalidate> 
                 <label for="full_name">Full Name</label>
-                <input type="text" id="full_name"
-                       autocomplete="name">
-
+                <input type="text" id="full_name">
                 <label for="username">Username</label>
-                <input type="text" id="username"
-                       autocomplete="username">
-
+                <input type="text" id="username">
                 <label for="email">Email</label>
-                <input type="email" id="email"
-                       autocomplete="email">
-
-                <label for="favorite">Favourite RPS Choice</label>
-                <select id="favorite">
-                    <option value="">Choose your sign</option>
-                    <option value="Rock">Rock</option>
-                    <option value="Paper">Paper</option>
-                    <option value="Scissors">Scissors</option>
-                </select>
-
+                <input type="email" id="email">
                 <label for="password">Password</label>
-                <input type="password" id="password"
-                       autocomplete="new-password">
-
-                <label for="confirm_password">
-                    Confirm Password
-                </label>
-                <input type="password" id="confirm_password"
-                       autocomplete="new-password">
-
-                <p id="register_message"
-                   class="form_message"
-                   role="status"
-                   aria-live="polite"></p>
-
-                <button type="submit" class="account_button">
-                    REGISTER
-                </button>
-
+                <input type="password" id="password">
+                <label for="confirm_password">Confirm Password</label>
+                <input type="password" id="confirm_password">
+                <p id="register_message" class="form_message"></p>
+                <button type="submit" class="account_button">REGISTER</button>
             </form>
-
-            <p class="switch_page">
-                Already have an account?
-                <a href="login.html">Login</a>
-            </p>
-
+            <p class="switch_page">Already have an account? <a href="login.html">Login</a></p>
         </section>
-
     </main>
 </body>
 </html>

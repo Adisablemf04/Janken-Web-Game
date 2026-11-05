@@ -1,4 +1,3 @@
-
 import {
     registerUser,
     loginUser
@@ -24,7 +23,6 @@ if (registerForm) {
             fullName: document.getElementById("full_name").value.trim(),
             username: document.getElementById("username").value.trim(),
             email: document.getElementById("email").value.trim(),
-            favorite: document.getElementById("favorite").value,
             password: document.getElementById("password").value
         };
 
@@ -49,12 +47,6 @@ if (registerForm) {
         // Validate email
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.email)) {
             showMessage(message, "Enter a valid email address.");
-            return;
-        }
-
-        // Validate favourite sign
-        if (!["Rock", "Paper", "Scissors"].includes(details.favorite)) {
-            showMessage(message, "Choose your favourite RPS sign.");
             return;
         }
 

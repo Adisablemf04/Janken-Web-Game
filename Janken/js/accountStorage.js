@@ -1,4 +1,3 @@
-
 const USERS_KEY = "ganken_users";
 const ACTIVE_KEY = "ganken_active_user";
 
@@ -99,13 +98,12 @@ export async function registerUser(details) {
         fullName: details.fullName.trim(),
         username: username,
         email: email,
-        favoriteSign: details.favorite,
         passwordSalt: salt,
         passwordHash: passwordHash,
         createdAt: new Date().toISOString(),
 
         game: {
-            currentCoins: 0,
+            currentCoins: 2,
             totalCoinsEarned: 0,
             highestLevelCompleted: 0,
             roundsWon: 0,

@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>GANKEN - Ranking</title>
+
+    <link rel="stylesheet" href="css/nav.css">
+
+    <script type="module" src="js/accountNav.js"></script>
+    <script type="module" src="js/ranking.js"></script>
+</head>
+
+<body>
+    <div class="page_container">
+
+        <header class="headerborder">
+            <a href="navigation.html" class="headerlogo">
+                GANKEN
+            </a>
+
+            <nav class="links">
+                <a href="registration.html" id="registration_link">
+                    REGISTRATION
+                </a>
+
+                <a href="login.html" id="login_link">
+                    LOGIN
+                </a>
+
+                <a href="ranking.html">RANKING</a>
+
+                <span id="player_name" hidden></span>
+
+                <button type="button" id="logout_button" hidden>
+                    LOGOUT
+                </button>
+            </nav>
+        </header>
+
+        <main class="ranking_main">
+
+            <h1 class="ranking_title">
+                HALL OF GAMBLERS
+            </h1>
+
+            <p class="ranking_subtitle">
+                Ranked by total coins earned
+            </p>
+
+            <div class="ranking_table_wrap">
+                <table class="ranking_table">
+
+                    <thead>
+                        <tr>
+                            <th>RANK</th>
+                            <th>PLAYER</th>
+                            <th>COINS EARNED</th>
+                            <th>MATCHES WON</th>
+                            <th>LEVELS CLEARED</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="ranking_body"></tbody>
+
+                </table>
+            </div>
+
+            <p id="ranking_empty" class="ranking_empty" hidden>
+                No registered players yet.
+            </p>
+
+        </main>
+
+    </div>
+</body>
+</html>
