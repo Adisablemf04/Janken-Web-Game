@@ -1,3 +1,4 @@
+
 import {
     getGameData, startOrResumeMatch, buyAbility,
     playRPSRound, payRetry, resetRun
@@ -276,8 +277,6 @@ export default class BattleScene extends Phaser.Scene {
     returnToRoom() {
         const room = this.scene.get("RoomScene");
         room.tableActivated = false;
-        room.dialogue.setText("Care for another gamble?");
-        room.prompt.setText("Approach the table | ESC to leave");
         this.scene.resume("RoomScene");
         this.scene.stop();
     }

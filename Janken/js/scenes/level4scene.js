@@ -1,3 +1,4 @@
+
 import {
     startOrResumeLevel4, buyLevel4Ability, chooseLevel4,
     resolveNpcLevel4Duel, nextLevel4Round
@@ -296,6 +297,10 @@ export default class Level4Scene extends Phaser.Scene {
     }
 
     blocked(message) {
+        if (message === "Level already completed. Move to the next level.") {
+            message = "Level already completed.";
+        }
+
         this.resultText.setText(message);
         this.action("RETURN TO ROOM", "blocked");
         this.hide(this.leaveButton);
@@ -304,8 +309,6 @@ export default class Level4Scene extends Phaser.Scene {
     returnToRoom() {
         const room = this.scene.get("RoomScene");
         room.tableActivated = false;
-        room.dialogue.setText("Care for another gamble?");
-        room.prompt.setText("Approach the table | ESC to leave");
         this.scene.resume("RoomScene");
         this.scene.stop();
     }
