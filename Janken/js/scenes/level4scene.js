@@ -1,4 +1,3 @@
-
 import {
     startOrResumeLevel4, buyLevel4Ability, chooseLevel4,
     resolveNpcLevel4Duel, nextLevel4Round
