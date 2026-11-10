@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,11 +9,96 @@
 </head>
 <body>
     <main class="game_page">
-        <a href="navigation.html" class="back_button">BACK TO MENU</a>
-        <h1>GANKEN</h1>
-        <div id="game_container"></div>
-        <p class="controls">WASD / ARROW KEYS — MOVE <br>ESC — EXIT ROOM<br>E — INTERACT </p>
+
+        <div class="game_wrapper">
+
+            <header class="game_header">
+                <a href="navigation.html" class="back_button">BACK TO MENU</a>
+                <h1>GANKEN</h1>
+            </header>
+
+            <div class="game_content">
+
+                <!-- LEFT: LEVEL 1, 2 AND 3 -->
+                <aside class="side_panel left_panel">
+
+                    <section class="info_box">
+                        <h2>LEVEL 1</h2>
+                        <ul>
+                            <li>Classic Rock Paper Scissors.</li>
+                            <li>You battle 1 NPC.</li>
+                            <li>First to 3 points wins.</li>
+                            <li>Win to unlock Level 2.</li>
+                        </ul>
+                    </section>
+
+                    <section class="info_box">
+                        <h2>LEVEL 2</h2>
+                        <ul>
+                            <li>Classic Rock Paper Scissors.</li>
+                            <li>You battle 1 NPC.</li>
+                            <li>First to 3 points wins.</li>
+                            <li>Abilities become available.</li>
+                            <li>Win to unlock Level 3.</li>
+                        </ul>
+                    </section>
+
+                    <section class="info_box">
+                        <h2>LEVEL 3</h2>
+                        <ul>
+                            <li>Three-player battle.</li>
+                            <li>You face NPC 1 and NPC 2.</li>
+                            <li>If one beats both, they get 1 point.</li>
+                            <li>If two tie with the winning sign, they duel.</li>
+                            <li>First to 3 points wins.</li>
+                            <li>Win to unlock Level 4.</li>
+                        </ul>
+                    </section>
+
+                </aside>
+
+                <!-- CENTER: GAME -->
+                <section class="center_panel">
+
+                    <div id="game_container"></div>
+
+                    <p class="controls">
+                        WASD / ARROW KEYS — MOVE<br>
+                        ESC — EXIT ROOM<br>
+                        E — INTERACT
+                    </p>
+
+                </section>
+
+                <!-- RIGHT: LEVEL 4 AND ABILITIES -->
+                <aside class="side_panel right_panel">
+
+                    <section class="info_box">
+                        <h2>LEVEL 4</h2>
+                        <ul>
+                            <li>Two-step round system.</li>
+                            <li>You choose twice in one round.</li>
+                            <li>Some symbols become unavailable after use.</li>
+                            <li>Win to finish the four levels.</li>
+                        </ul>
+                    </section>
+
+                    <section class="info_box">
+                        <h2>ABILITIES</h2>
+                        <ul>
+                            <li><strong>Lucky Shield:</strong> 51% chance to block 1 defeat.</li>
+                            <li><strong>Mind Trick:</strong> Chance to force the opponent's result.</li>
+                            <li><strong>Direct Strike:</strong> Removes 1 NPC point instantly.</li>
+                            <li>Each ability can only be used once per match.</li>
+                        </ul>
+                    </section>
+
+                </aside>
+
+            </div>
+        </div>
     </main>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js"></script>
     <script type="module" src="js/game.js"></script>
 </body>
