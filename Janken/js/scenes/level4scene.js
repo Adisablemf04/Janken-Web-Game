@@ -1,36 +1,21 @@
-import {
-    startOrResumeLevel4, buyLevel4Ability, chooseLevel4,
-    resolveNpcLevel4Duel, nextLevel4Round
-} from "../level4storage.js";
+import { startOrResumeLevel4, buyLevel4Ability, chooseLevel4, resolveNpcLevel4Duel, nextLevel4Round } from "../level4storage.js";
 import { getGameData, payRetry, resetRun } from "../gameStorage.js";
 import { ABILITIES } from "../rules/abilities.js";
-
 const NAMES = { player: "YOU", npc1: "NPC 1", npc2: "NPC 2" };
-
 export default class Level4Scene extends Phaser.Scene {
-    constructor() {
-        super("Level4Scene");
-    }
+    constructor() { super("Level4Scene"); }
 
     create() {
         this.phase = "first";
         this.target = "npc1";
         this.add.rectangle(450, 300, 900, 600, 0x000000, 0.55);
 
-        // Three independent scores, below the room title
         this.scoreValues = [
-            { name: "PLAYER", x: 160 },
-            { name: "NPC 1", x: 450 },
-            { name: "NPC 2", x: 740 }
+            { name: "PLAYER", x: 160 }, { name: "NPC 1", x: 450 }, { name: "NPC 2", x: 740 }
         ].map(({ name, x }) => {
-            this.add.rectangle(x, 225, 185, 62, 0x190a10, 0.96)
-                .setStrokeStyle(2, 0xb83c51);
-            this.add.text(x, 209, name, {
-                fontSize: "16px", color: "#f5ede4"
-            }).setOrigin(0.5);
-            return this.add.text(x, 239, "0", {
-                fontSize: "26px", color: "#ff7185"
-            }).setOrigin(0.5);
+            this.add.rectangle(x, 225, 185, 62, 0x190a10, 0.96).setStrokeStyle(2, 0xb83c51);
+            this.add.text(x, 209, name, { fontSize: "16px", color: "#f5ede4" }).setOrigin(0.5);
+            return this.add.text(x, 239, "0", { fontSize: "26px", color: "#ff7185" }).setOrigin(0.5);
         });
 
         this.coinsText = this.add.text(790, 82, "COINS: 0", {
@@ -38,19 +23,15 @@ export default class Level4Scene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         this.npcTexts = [310, 590].map((x, i) => {
-            this.add.rectangle(x, 135, 245, 53, 0x190a10, 0.96)
-                .setStrokeStyle(2, 0xb83c51);
+            this.add.rectangle(x, 135, 245, 53, 0x190a10, 0.96).setStrokeStyle(2, 0xb83c51);
             return this.add.text(x, 135, `NPC ${i + 1}: Ready.`, {
-                fontSize: "16px", color: "#f5ede4",
-                align: "center", wordWrap: { width: 225 }
+                fontSize: "16px", color: "#f5ede4", align: "center", wordWrap: { width: 225 }
             }).setOrigin(0.5);
         });
 
-        this.add.rectangle(450, 335, 825, 125, 0x190a10, 0.96)
-            .setStrokeStyle(2, 0x782738);
+        this.add.rectangle(450, 335, 825, 125, 0x190a10, 0.96).setStrokeStyle(2, 0x782738);
         this.resultText = this.add.text(450, 335, "Choose your first sign.", {
-            fontSize: "19px", color: "#f5ede4",
-            align: "center", wordWrap: { width: 780 }
+            fontSize: "19px", color: "#f5ede4", align: "center", wordWrap: { width: 780 }
         }).setOrigin(0.5);
 
         this.targetButton = this.button(450, 412, "TARGET: NPC 1 (CLICK TO SWITCH)", 15);
@@ -82,27 +63,20 @@ export default class Level4Scene extends Phaser.Scene {
         this.leaveButton.on("pointerdown", () => this.returnToRoom());
         this.hide(this.actionButton);
         this.hide(this.leaveButton);
-
         this.setupBattle();
     }
 
     button(x, y, label, size) {
         const button = this.add.text(x, y, label, {
-            fontSize: `${size}px`, color: "#f5ede4",
-            backgroundColor: "#642233", padding: { x: 15, y: 11 }
+            fontSize: `${size}px`, color: "#f5ede4", backgroundColor: "#642233", padding: { x: 15, y: 11 }
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
         button.on("pointerover", () => button.setBackgroundColor("#92364a"));
         button.on("pointerout", () => button.setBackgroundColor("#642233"));
         return button;
     }
 
-    hide(button) {
-        button.setVisible(false).disableInteractive();
-    }
-
-    show(button) {
-        button.setVisible(true).setInteractive({ useHandCursor: true });
-    }
+    hide(button) { button.setVisible(false).disableInteractive(); }
+    show(button) { button.setVisible(true).setInteractive({ useHandCursor: true }); }
 
     updateScores(data) {
         if (!data) return;
@@ -118,7 +92,6 @@ export default class Level4Scene extends Phaser.Scene {
     refreshButtons(game) {
         const match = game?.activeMatch;
         const choosing = Boolean(match && ["first", "second", "duel"].includes(this.phase));
-
         if (choosing) this.show(this.targetButton);
         else this.hide(this.targetButton);
 
@@ -127,15 +100,11 @@ export default class Level4Scene extends Phaser.Scene {
             button.setAlpha(blocked ? 0.35 : 1);
             if (choosing && !blocked) this.show(button);
             else this.hide(button);
-            // Keep the unavailable sign visible but faded in Selection 2.
             if (choosing && blocked) button.setVisible(true);
         }
 
         for (const { key, name, button } of this.abilityButtons) {
-            if (!choosing) {
-                this.hide(button);
-                continue;
-            }
+            if (!choosing) { this.hide(button); continue; }
             const used = match.playerAbilities[`${key}Used`];
             const enough = game.currentCoins >= ABILITIES[key].cost;
             const inDuel = this.phase !== "duel" || match.duel.contenders.includes(this.target);
@@ -167,11 +136,8 @@ export default class Level4Scene extends Phaser.Scene {
         this.updateCoins(game);
         if (game.isGameOver) return this.gameOver();
         if (game.pendingRetryLevels.includes(4)) return this.retryOffer();
-        try {
-            this.syncPhase(startOrResumeLevel4());
-        } catch (error) {
-            this.blocked(error.message);
-        }
+        try { this.syncPhase(startOrResumeLevel4()); }
+        catch (error) { this.blocked(error.message); }
     }
 
     syncPhase(game) {
@@ -207,17 +173,12 @@ export default class Level4Scene extends Phaser.Scene {
             this.updateCoins(result.game);
             this.resultText.setText(result.message);
             this.refreshButtons(result.game);
-        } catch (error) {
-            this.resultText.setText(error.message);
-        }
+        } catch (error) { this.resultText.setText(error.message); }
     }
 
     choose(sign) {
-        try {
-            this.showEvent(chooseLevel4(sign));
-        } catch (error) {
-            this.resultText.setText(error.message);
-        }
+        try { this.showEvent(chooseLevel4(sign)); }
+        catch (error) { this.resultText.setText(error.message); }
     }
 
     showEvent(event) {
@@ -264,23 +225,17 @@ export default class Level4Scene extends Phaser.Scene {
 
     handleAction() {
         try {
-            if (this.phase === "npcDuel") {
-                this.showEvent(resolveNpcLevel4Duel());
-            } else if (this.phase === "next") {
-                this.syncPhase(nextLevel4Round());
-            } else if (this.phase === "retry") {
+            if (this.phase === "npcDuel") this.showEvent(resolveNpcLevel4Duel());
+            else if (this.phase === "next") this.syncPhase(nextLevel4Round());
+            else if (this.phase === "retry") {
                 payRetry(4);
                 this.syncPhase(startOrResumeLevel4());
             } else if (this.phase === "gameover") {
                 resetRun();
                 this.scene.stop("RoomScene");
                 this.scene.start("OutsideScene");
-            } else if (["finished", "blocked"].includes(this.phase)) {
-                this.returnToRoom();
-            }
-        } catch (error) {
-            this.blocked(error.message);
-        }
+            } else if (["finished", "blocked"].includes(this.phase)) this.returnToRoom();
+        } catch (error) { this.blocked(error.message); }
     }
 
     retryOffer() {
@@ -299,7 +254,6 @@ export default class Level4Scene extends Phaser.Scene {
         if (message === "Level already completed. Move to the next level.") {
             message = "Level already completed.";
         }
-
         this.resultText.setText(message);
         this.action("RETURN TO ROOM", "blocked");
         this.hide(this.leaveButton);

@@ -1,10 +1,7 @@
-
 const music = new Audio();
-
 music.loop = true;
 music.volume = 0.3;
 music.preload = "auto";
-
 let currentTrack = "";
 
 function startMusic() {
@@ -20,7 +17,6 @@ export function playMusic(filename) {
         startMusic();
         return;
     }
-
     currentTrack = filename;
     music.pause();
     music.src = new URL(`../audio/${filename}`, import.meta.url).href;

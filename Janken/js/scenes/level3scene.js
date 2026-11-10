@@ -1,55 +1,39 @@
-
 import { startOrResumeLevel3, playThreeWay, playLevel3Duel } from "../level3storage.js";
 import { getGameData, payRetry, resetRun } from "../gameStorage.js";
 
 export default class Level3Scene extends Phaser.Scene {
-    constructor() {
-        super("Level3Scene");
-    }
+    constructor() { super("Level3Scene"); }
 
     create() {
         this.phase = "choose";
         this.add.rectangle(450, 300, 900, 600, 0x000000, 0.45);
 
-        // Three separate score boxes
         this.scoreValues = [
             { name: "PLAYER", x: 165 },
             { name: "NPC 1", x: 450 },
             { name: "NPC 2", x: 735 }
         ].map(({ name, x }) => {
-            this.add.rectangle(x, 218, 185, 60, 0x190a10, 0.95)
-                .setStrokeStyle(2, 0xb83c51);
-            this.add.text(x, 205, name, {
-                fontSize: "16px", color: "#f5ede4"
-            }).setOrigin(0.5);
-            return this.add.text(x, 231, "0", {
-                fontSize: "26px", color: "#ff7185"
-            }).setOrigin(0.5);
+            this.add.rectangle(x, 218, 185, 60, 0x190a10, 0.95).setStrokeStyle(2, 0xb83c51);
+            this.add.text(x, 205, name, { fontSize: "16px", color: "#f5ede4" }).setOrigin(0.5);
+            return this.add.text(x, 231, "0", { fontSize: "26px", color: "#ff7185" }).setOrigin(0.5);
         });
 
         this.coinsText = this.add.text(775, 85, "COINS: 0", {
             fontSize: "18px", color: "#ffd083"
         }).setOrigin(0.5);
 
-        // NPC speech bubbles
         this.npcDialogues = [310, 590].map((x, i) => {
-            this.add.rectangle(x, 135, 235, 55, 0x190a10, 0.95)
-                .setStrokeStyle(2, 0xb83c51);
+            this.add.rectangle(x, 135, 235, 55, 0x190a10, 0.95).setStrokeStyle(2, 0xb83c51);
             return this.add.text(x, 135, `NPC ${i + 1}: Ready.`, {
-                fontSize: "16px", color: "#f5ede4",
-                align: "center", wordWrap: { width: 220 }
+                fontSize: "16px", color: "#f5ede4", align: "center", wordWrap: { width: 220 }
             }).setOrigin(0.5);
         });
 
-        this.add.rectangle(450, 345, 820, 145, 0x190a10, 0.92)
-            .setStrokeStyle(2, 0x782738);
-        this.resultText = this.add.text(450, 345,
-            "All three participants must choose a sign.", {
-                fontSize: "22px", color: "#f5ede4",
-                align: "center", wordWrap: { width: 780 }
-            }).setOrigin(0.5);
+        this.add.rectangle(450, 345, 820, 145, 0x190a10, 0.92).setStrokeStyle(2, 0x782738);
+        this.resultText = this.add.text(450, 345, "All three participants must choose a sign.", {
+            fontSize: "22px", color: "#f5ede4", align: "center", wordWrap: { width: 780 }
+        }).setOrigin(0.5);
 
-        // Choice and action buttons
         this.choiceButtons = ["Rock", "Paper", "Scissors"].map((sign, i) => {
             const button = this.makeButton(220 + i * 230, 520, sign.toUpperCase(), 23);
             button.on("pointerdown", () => this.selectSign(sign));
@@ -63,15 +47,12 @@ export default class Level3Scene extends Phaser.Scene {
         this.leaveButton = this.makeButton(450, 575, "LEAVE ROOM", 17, "#38232b", { x: 18, y: 10 });
         this.leaveButton.on("pointerdown", () => this.returnToRoom());
         this.leaveButton.setVisible(false);
-
         this.setupBattle();
     }
 
-    // Create buttons with the same style
     makeButton(x, y, label, size, background = "#642233", padding = { x: 24, y: 16 }) {
         const button = this.add.text(x, y, label, {
-            fontSize: `${size}px`, color: "#f5ede4",
-            backgroundColor: background, padding
+            fontSize: `${size}px`, color: "#f5ede4", backgroundColor: background, padding
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
         button.on("pointerover", () => button.setBackgroundColor("#92364a"));
@@ -99,8 +80,8 @@ export default class Level3Scene extends Phaser.Scene {
     setNpcDialogues(choices = null) {
         this.npcDialogues.forEach((text, i) => {
             const sign = choices?.[`npc${i + 1}`];
-            text.setText(!choices ? `NPC ${i + 1}: Ready.` :
-                sign ? `NPC ${i + 1}: ${sign}!` : `NPC ${i + 1}: Eliminated`);
+            text.setText(!choices ? `NPC ${i + 1}: Ready.`
+                : sign ? `NPC ${i + 1}: ${sign}!` : `NPC ${i + 1}: Eliminated`);
         });
     }
 
@@ -125,29 +106,20 @@ export default class Level3Scene extends Phaser.Scene {
             } else if (match.playerScore || match.npcScore || match.npc2Score) {
                 this.resultText.setText("Saved match restored. Choose your next sign.");
             }
-        } catch (error) {
-            this.blocked(error.message);
-        }
+        } catch (error) { this.blocked(error.message); }
     }
 
-    // Use the Level 3 rules from level3storage.js
     selectSign(sign = null) {
         if (!["choose", "duel-player", "duel-npc"].includes(this.phase)) return;
-
         try {
-            const result = this.phase === "choose"
-                ? playThreeWay(sign)
-                : playLevel3Duel(sign);
+            const result = this.phase === "choose" ? playThreeWay(sign) : playLevel3Duel(sign);
             this.showResult(result);
-        } catch (error) {
-            this.blocked(error.message);
-        }
+        } catch (error) { this.blocked(error.message); }
     }
 
     showResult(result) {
         this.updateDisplay(result, result.game);
         this.setNpcDialogues(result.choices);
-
         if (result.type === "duel") return this.beginDuel(result.duel);
 
         if (result.type === "tie") {
@@ -155,18 +127,14 @@ export default class Level3Scene extends Phaser.Scene {
                 ? "THREE-WAY TIE! No points awarded."
                 : "DUEL TIED! The eliminated participant returns. Round restarts.");
         } else {
-            const action = this.phase === "choose"
-                ? "defeated both opponents" : "won the duel";
+            const action = this.phase === "choose" ? "defeated both opponents" : "won the duel";
             this.resultText.setText(
                 `${this.actorName(result.winner)} ${action}!\n${this.actorName(result.winner)} earned 1 point.`
             );
         }
 
-        if (result.matchOutcome) {
-            this.finishMatch(result.matchOutcome, result.game);
-        } else {
-            this.showAction("NEXT ROUND", "next");
-        }
+        if (result.matchOutcome) this.finishMatch(result.matchOutcome, result.game);
+        else this.showAction("NEXT ROUND", "next");
     }
 
     beginDuel(duel) {
@@ -245,9 +213,7 @@ export default class Level3Scene extends Phaser.Scene {
             } else if (["finished", "blocked"].includes(this.phase)) {
                 this.returnToRoom();
             }
-        } catch (error) {
-            this.blocked(error.message);
-        }
+        } catch (error) { this.blocked(error.message); }
     }
 
     returnToRoom() {

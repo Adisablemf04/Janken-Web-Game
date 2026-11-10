@@ -1,4 +1,3 @@
-
 export const ABILITIES = {
     shield: {
         name: "LUCKY SHIELD",
@@ -15,7 +14,6 @@ export const ABILITIES = {
         cost: 4
     }
 };
-
 export const SHIELD_CHANCE = 0.51;
 export const MIND_CHANCE = 0.51;
 export const NPC_ABILITY_CHANCE = 0.40;

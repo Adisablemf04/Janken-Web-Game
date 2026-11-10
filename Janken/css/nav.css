@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Noto+Serif+JP:wght@600;700&family=Rubik+Dirt&display=swap');
 
 * {
@@ -205,8 +204,6 @@ body {
     from {transform: translateX(0);}to {transform: translateX(-50%);}
 }
 
-/* ACCOUNT STATUS IN NAVIGATION */
-
 .links button {
     background: transparent;
     border: none;
@@ -224,8 +221,6 @@ body {
     color: #ff4559;
     font-size: 18px;
 }
-
-/* Keep hidden account controls hidden */
 
 .links [hidden] {
     display: none;
@@ -288,7 +283,6 @@ body {
     background: rgba(140, 35, 55, 0.25);
 }
 
-/* Highlight the currently logged-in player */
 .ranking_table .current_player {
     background: rgba(180, 35, 60, 0.3);
 }
@@ -299,8 +293,6 @@ body {
     margin-top: 25px;
 }
 
-/* Respect HTML hidden attributes */
-.links [hidden],
-.ranking_empty[hidden] {
+.links [hidden], .ranking_empty[hidden] {
     display: none;
 }

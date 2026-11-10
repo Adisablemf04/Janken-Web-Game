@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Rubik+Dirt&display=swap');
 
 * {
@@ -17,8 +16,6 @@ body {
     font-family: "Anton", sans-serif;
 }
 
-/* MAIN PAGE */
-
 .account_page {
     min-height: 100vh;
     display: flex;
@@ -27,23 +24,16 @@ body {
     padding: 40px 20px;
 }
 
-/* ACCOUNT FORM CONTAINER */
-
 .account_box {
     width: 100%;
     max-width: 480px;
     padding: 35px 40px;
-
     background: rgba(0, 0, 0, 0.35);
     border: 2px solid #a72936;
     border-radius: 8px;
-
     box-shadow:
-        0 0 12px rgba(255, 30, 55, 0.4),
-        inset 0 0 10px rgba(255, 30, 55, 0.1);
+        0 0 12px rgba(255, 30, 55, 0.4), inset 0 0 10px rgba(255, 30, 55, 0.1);
 }
-
-/* BACK LINK */
 
 .back_link {
     color: #f5ede4;
@@ -54,8 +44,6 @@ body {
 .back_link:hover {
     color: #ff4559;
 }
-
-/* HEADINGS */
 
 .account_box h1 {
     margin: 20px 0 5px;
@@ -78,8 +66,6 @@ body {
     text-align: center;
 }
 
-/* FORM */
-
 .account_box form {
     display: flex;
     flex-direction: column;
@@ -91,44 +77,34 @@ body {
     font-size: 16px;
 }
 
-.account_box input,
-.account_box select {
+.account_box input, .account_box select {
     width: 100%;
     padding: 12px;
-
     background: rgba(0, 0, 0, 0.55);
     border: 1px solid #93404a;
     border-radius: 5px;
-
     color: #f5ede4;
     font-family: Arial, sans-serif;
     font-size: 15px;
 }
 
-.account_box input:focus,
-.account_box select:focus {
+.account_box input:focus, .account_box select:focus {
     outline: none;
     border-color: #ff4559;
     box-shadow: 0 0 8px rgba(255, 30, 55, 0.4);
 }
 
-/* REGISTER / LOGIN BUTTON */
-
 .account_button {
     margin-top: 20px;
     padding: 13px;
-
     background: rgba(90, 0, 10, 0.4);
     border: 1px solid #d3263d;
     border-radius: 30px;
-
     color: #f5ede4;
     font-family: "Anton", sans-serif;
     font-size: 20px;
     cursor: pointer;
-
-    transition: background-color 0.3s ease,
-                box-shadow 0.3s ease;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .account_button:hover {
@@ -140,8 +116,6 @@ body {
     opacity: 0.6;
     cursor: wait;
 }
-
-/* ERROR AND SUCCESS MESSAGES */
 
 .form_message {
     font-family: Arial, sans-serif;
@@ -159,8 +133,6 @@ body {
     color: #90d6a3;
 }
 
-/* SWITCH BETWEEN LOGIN AND REGISTRATION */
-
 .switch_page {
     margin-top: 25px;
     text-align: center;
@@ -174,16 +146,4 @@ body {
 
 .switch_page a:hover {
     text-decoration: underline;
-}
-
-/* SMALL SCREENS */
-
-@media (max-width: 600px) {
-    .account_box {
-        padding: 25px 20px;
-    }
-
-    .account_box h1 {
-        font-size: 42px;
-    }
 }
