@@ -1,21 +1,69 @@
+const DIRECTIONS = {
+    down: { start: 0, end: 5, idle: 0 },
+    left: { start: 18, end: 23, idle: 18 },
+    up: { start: 12, end: 17, idle: 12 },
+    right: { start: 6, end: 11, idle: 6 }
+};
+
 export default class Player {
+
+    static preload(scene) {
+        // Load the player spritesheet only if needed
+        if (!scene.textures.exists("ganken-player")) {
+            scene.load.spritesheet(
+                "ganken-player",
+                "images/characters/player.png",
+                {
+                    frameWidth: 32,
+                    frameHeight: 32
+                }
+            );
+        }
+    }
 
     constructor(scene, x, y) {
         this.scene = scene;
         this.speed = 170;
+        this.direction = "down";
 
-        // Temporary player character
-        this.sprite = scene.add.rectangle(
-            x, y, 28, 34, 0xf5ede4
+        // Animated player character
+        this.sprite = scene.physics.add.sprite(
+            x, y, "ganken-player", 0
         );
 
-        this.sprite.setStrokeStyle(2, 0xd3263d);
+        // Enlarge the pixel-art character
+        this.sprite.setScale(2);
 
-        // Enable physics
-        scene.physics.add.existing(this.sprite);
+        // Keep pixel art sharp
+        scene.textures.get("ganken-player").setFilter(
+            Phaser.Textures.FilterMode.NEAREST
+        );
+
+        // Keep collision size close to the original player
+        this.sprite.setBodySize(14, 17, true);
 
         // Prevent leaving the map
         this.sprite.body.setCollideWorldBounds(true);
+
+        // Create walking animations once
+        for (const [direction, frames] of Object.entries(DIRECTIONS)) {
+            const key = `ganken-player-walk-${direction}`;
+
+            if (!scene.anims.exists(key)) {
+                scene.anims.create({
+                    key: key,
+                    frames: scene.anims.generateFrameNumbers(
+                        "ganken-player",
+                        {
+                            start: frames.start,
+                            end: frames.end
+                        }
+                    ),
+                    frameRate: 10,
+                    repeat: -1
+                });
+            }
+        }
 
         // Keyboard controls
         this.keys = scene.input.keyboard.addKeys(
@@ -57,6 +105,34 @@ export default class Player {
             (x / length) * this.speed,
             (y / length) * this.speed
         );
+
+        // Walking animations
+        if (x !== 0 || y !== 0) {
+
+            if (y < 0) {
+                this.direction = "up";
+            } else if (y > 0) {
+                this.direction = "down";
+            } else if (x < 0) {
+                this.direction = "left";
+            } else {
+                this.direction = "right";
+            }
+
+            this.sprite.anims.play(
+                `ganken-player-walk-${this.direction}`,
+                true
+            );
+
+        } else {
+
+            // Return to the standing pose
+            this.sprite.anims.stop();
+
+            this.sprite.setFrame(
+                DIRECTIONS[this.direction].idle
+            );
+        }
     }
 
     get x() {

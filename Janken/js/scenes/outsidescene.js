@@ -1,3 +1,4 @@
+
 import Player from "../entities/player.js";
 
 export default class OutsideScene extends Phaser.Scene {
@@ -6,74 +7,68 @@ export default class OutsideScene extends Phaser.Scene {
         super("OutsideScene");
     }
 
-    init(data) {
-
-        // Check whether player is returning from courtyard
+    init(data = {}) {
         this.fromCourtyard = data.fromCourtyard || false;
     }
 
+    preload() {
+        // Outside background
+        if (!this.textures.exists("outside-background")) {
+            this.load.image(
+                "outside-background",
+                "images/outside.png"
+            );
+        }
+
+        // Animated player
+        Player.preload(this);
+    }
+
     create() {
-
         this.cameras.main.setBackgroundColor("#11151a");
-
         this.physics.world.setBounds(0, 0, 900, 600);
 
-        // Outdoor ground
-        this.add.rectangle(
-            450, 300, 900, 600, 0x1b2420
-        );
+        // Outside background
+        this.add.image(
+            450,
+            300,
+            "outside-background"
+        ).setDisplaySize(900, 600).setDepth(-1);
 
-        // Path leading to the building entrance
-        this.add.rectangle(
-            450, 445, 150, 310, 0x494348
-        );
+        // Invisible collision walls around the mansion
+        // Thin walls prevent entering the house but leave
+        // the garden and surrounding outdoor area accessible
 
-        // Building exterior
-        const building = this.add.rectangle(
-            450, 160, 620, 280, 0x29212a
-        );
+        this.walls = [];
 
-        building.setStrokeStyle(4, 0x8d3345);
+        // Left side of the mansion entrance
+        this.createWall(255, 215, 310, 18);
 
-        // Give the building solid physics
-        this.physics.add.existing(building, true);
+        // Right side of the mansion entrance
+        this.createWall(645, 215, 310, 18);
 
-        // Building name
-        this.add.text(450, 65, "GANKEN", {
-            fontSize: "38px",
-            color: "#d83d55"
-        }).setOrigin(0.5);
+        // Main entrance barrier
+        // Player must press E to enter
+        this.createWall(450, 215, 80, 18);
 
-        // Main entrance door
-        this.door = this.add.rectangle(
-            450, 265, 110, 110, 0x58202d
-        );
-
-        this.door.setStrokeStyle(3, 0xb83c51);
-
-        this.add.text(450, 250, "ENTRANCE", {
-            fontSize: "16px",
-            color: "#f5ede4"
-        }).setOrigin(0.5);
-
-        // Door handle
-        this.add.circle(488, 283, 5, 0xd0a76c);
-
-        // Decorative objects
-        this.add.circle(120, 430, 65, 0x162b20);
-        this.add.circle(780, 430, 65, 0x162b20);
+        // Entrance interaction position
+        this.door = {
+            x: 450,
+            y: 245
+        };
 
         // Player spawn location
-        // Returning players spawn closer to the entrance
         const spawnY = this.fromCourtyard ? 355 : 490;
 
         this.player = new Player(this, 450, spawnY);
 
-        // Prevent walking through the building
-        this.physics.add.collider(
-            this.player.sprite,
-            building
-        );
+        // Add collision with mansion walls
+        this.walls.forEach(wall => {
+            this.physics.add.collider(
+                this.player.sprite,
+                wall
+            );
+        });
 
         // Interaction key
         this.interactKey = this.input.keyboard.addKey(
@@ -82,13 +77,32 @@ export default class OutsideScene extends Phaser.Scene {
 
         // Interaction prompt
         this.prompt = this.add.text(
-            450, 555,
+            450,
+            555,
             "Find the entrance to the building",
             {
                 fontSize: "20px",
-                color: "#f5ede4"
+                color: "#f5ede4",
+                backgroundColor: "rgba(15, 6, 10, 0.75)",
+                padding: { x: 12, y: 8 }
             }
-        ).setOrigin(0.5);
+        ).setOrigin(0.5).setDepth(10);
+    }
+
+    createWall(x, y, width, height) {
+
+        // Invisible collision wall
+        const wall = this.add.rectangle(
+            x,
+            y,
+            width,
+            height,
+            0x29212a
+        ).setVisible(false);
+
+        this.physics.add.existing(wall, true);
+
+        this.walls.push(wall);
     }
 
     update() {
@@ -96,17 +110,14 @@ export default class OutsideScene extends Phaser.Scene {
         // Update player movement
         this.player.update();
 
-        // Calculate distance to entrance
-        const distance = Phaser.Math.Distance.Between(
-            this.player.x,
-            this.player.y,
-            this.door.x,
-            this.door.y
-        );
+        // Check if player is directly in front
+        // of the mansion entrance
+        const nearDoor =
+            Math.abs(this.player.x - this.door.x) < 55 &&
+            this.player.y >= 225 &&
+            this.player.y < 290;
 
-        const nearDoor = distance < 110;
-
-        // Show interaction prompt
+        // Interaction prompt
         if (nearDoor) {
 
             this.prompt.setText(
@@ -120,7 +131,7 @@ export default class OutsideScene extends Phaser.Scene {
             );
         }
 
-        // Enter the courtyard
+        // Enter the courtyard only at the entrance
         if (
             nearDoor &&
             Phaser.Input.Keyboard.JustDown(this.interactKey)
